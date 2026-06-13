@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-WemScVendasApplication<wem-sc-vendas>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.wemsellers.wem_sc_vendas.WemScVendasApplication",
+            "projectName": "wem-sc-vendas",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
