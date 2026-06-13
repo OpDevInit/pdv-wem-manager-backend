@@ -29,6 +29,9 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin("*")
 public class PVDController {
 
+
+    private final ProdutoRepository repository;
+    
     private final ProdutoRepository produtoRepository;
 
     private final ExcelService excelService;
@@ -40,18 +43,14 @@ public class PVDController {
 
     // --- ENDPOINT: LISTAR TODOS OS PRODUTOS ---
     @GetMapping("/produtos")
-    public ResponseEntity<List<Produto>> listarProdutos() {
-        return ResponseEntity.ok(produtoRepository.findAll());
+   public List<Produto> listarProdutos() {
+        return repository.findAll(); // Busca direto da Supabase
     }
 
     // --- ENDPOINT: CADASTRO DE PRODUTO ---
     @PostMapping("/produtos")
-    public ResponseEntity<Produto> cadastrarProduto(@RequestBody Produto produto) {
-        if (produto.getCodigoBarras() == null || produto.getCodigoBarras().trim().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-        Produto novoProduto = produtoRepository.save(produto);
-        return ResponseEntity.ok(novoProduto);
+   public Produto cadastrarProduto(@RequestBody Produto produto) {
+        return repository.save(produto); // Salva direto na Supabase
     }
 
     // 1. BIPAR CÓDIGO DE BARRAS: Retorna o produto e a quantidade padrão (1) para o
