@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+
 import org.apache.poi.ss.usermodel.*;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/api/pdv")
@@ -43,9 +45,10 @@ public class PVDController {
 
     // --- ENDPOINT: LISTAR TODOS OS PRODUTOS ---
     @GetMapping("/produtos")
-   public List<Produto> listarProdutos() {
-        return produtoRepository.findAll(); // Busca direto da Supabase
-    }
+public List<Produto> listarProdutos() {
+    // Usando o import do Sort para organizar de A a Z pelo atributo "nome"
+    return produtoRepository.findAll(Sort.by(Sort.Direction.ASC, "nome"));
+}
 
     // --- ENDPOINT: CADASTRO DE PRODUTO ---
     @PostMapping("/produtos")
