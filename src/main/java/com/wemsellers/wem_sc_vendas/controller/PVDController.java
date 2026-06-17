@@ -54,24 +54,23 @@ public class PVDController {
     }
 
     // 1. BIPAR CÓDIGO DE BARRAS: Retorna o produto e a quantidade padrão (1) para o
-  @GetMapping("/bipar/{codigo}")
+ @GetMapping("/bipar/{codigo}")
 public ResponseEntity<ItemCarrinhoDTO> biparProduto(@PathVariable String codigo) {
-    // 1. Limpa espaços em branco invisíveis nas pontas
     String codigoLimpo = codigo.trim();
     
-    // 2. Tenta buscar pelo código exato enviado (ex: "002")
-    return produtoRepository.findByCodigoBarras(codigoLimpo)
-        .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco()))) //
-        .or(() -> {
-            // 3. Se não achou e o código for numérico (ex: "002"), remove os zeros à esquerda e tenta buscar de novo (ex: "2")
-            if (codigoLimpo.matches("\\d+")) {
-                String codigoSemZeros = String.valueOf(Long.parseLong(codigoLimpo));
-                return produtoRepository.findByCodigoBarras(codigoSemZeros);
-            }
-            return java.util.Optional.empty();
-        })
-        .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco()))) //
-        .orElse(ResponseEntity.notFound().build()); //
+    // 1. Tenta buscar pelo código exato que você digitou/bipou (ex: "002")
+    java.util.Optional<Produto> produtoOpt = produtoRepository.findByCodigoBarras(codigoLimpo);
+    
+    // 2. Se não achou e o código for só números, limpa os zeros à esquerda e tenta de novo (ex: "2")
+    if (produtoOpt.isEmpty() && codigoLimpo.matches("\\d+")) {
+        String codigoSemZeros = String.valueOf(Long.parseLong(codigoLimpo));
+        produtoOpt = produtoRepository.findByCodigoBarras(codigoSemZeros);
+    }
+    
+    // 3. Se achou em alguma das tentativas, retorna o DTO. Se não, retorna 404.
+    return produtoOpt
+            .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco())))
+            .orElse(ResponseEntity.notFound().build());
 }
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
