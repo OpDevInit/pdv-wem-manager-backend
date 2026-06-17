@@ -61,7 +61,30 @@ public class PVDController {
                 .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco())))
                 .orElse(ResponseEntity.notFound().build());
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
+        return produtoRepository.findById(id)
+                .map(produto -> {
+                    produtoRepository.delete(produto);
+                    return ResponseEntity.ok().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 
+    // 3. ROTA PARA EDITAR PRODUTO PELO ID
+    @PutMapping("/{id}")
+    public ResponseEntity<Produto> editarProduto(@PathVariable Long id, @RequestBody Produto dadosAtualizados) {
+        return produtoRepository.findById(id)
+                .map(produtoExistente -> {
+                    // Atualiza apenas os campos permitidos
+                    produtoExistente.setNome(dadosAtualizados.getNome());
+                    produtoExistente.setPreco(dadosAtualizados.getPreco());
+                    
+                    Produto produtoSalvo = produtoRepository.save(produtoExistente);
+                    return ResponseEntity.ok(produtoSalvo);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
     // 2. FINALIZAR VENDA: Recebe a lista de produtos do PDV e salva no Excel
     @PostMapping("/finalizar")
     public ResponseEntity<byte[]> finalizarVenda(@RequestBody VendaDTO dadosVenda) {
