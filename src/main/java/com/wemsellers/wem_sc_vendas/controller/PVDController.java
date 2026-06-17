@@ -54,13 +54,25 @@ public class PVDController {
     }
 
     // 1. BIPAR CÓDIGO DE BARRAS: Retorna o produto e a quantidade padrão (1) para o
-    // PDV
-    @GetMapping("/bipar/{codigo}")
-    public ResponseEntity<ItemCarrinhoDTO> biparProduto(@PathVariable String codigo) {
-        return produtoRepository.findByCodigoBarras(codigo)
-                .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco())))
-                .orElse(ResponseEntity.notFound().build());
-    }
+  @GetMapping("/bipar/{codigo}")
+public ResponseEntity<ItemCarrinhoDTO> biparProduto(@PathVariable String codigo) {
+    // 1. Limpa espaços em branco invisíveis nas pontas
+    String codigoLimpo = codigo.trim();
+    
+    // 2. Tenta buscar pelo código exato enviado (ex: "002")
+    return produtoRepository.findByCodigoBarras(codigoLimpo)
+        .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco()))) //
+        .or(() -> {
+            // 3. Se não achou e o código for numérico (ex: "002"), remove os zeros à esquerda e tenta buscar de novo (ex: "2")
+            if (codigoLimpo.matches("\\d+")) {
+                String codigoSemZeros = String.valueOf(Long.parseLong(codigoLimpo));
+                return produtoRepository.findByCodigoBarras(codigoSemZeros);
+            }
+            return java.util.Optional.empty();
+        })
+        .map(p -> ResponseEntity.ok(new ItemCarrinhoDTO(p.getNome(), 1, p.getPreco()))) //
+        .orElse(ResponseEntity.notFound().build()); //
+}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
         return produtoRepository.findById(id)
